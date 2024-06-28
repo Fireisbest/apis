@@ -14,8 +14,13 @@ app.get('/api/gamepasses/:userId', async (req, res) => {
                 'Accept': 'application/json'
             }
         });
-        const gamepasses = response.data.Data.Items;
-        res.json(gamepasses);
+
+        if (response.data && response.data.Data && response.data.Data.Items) {
+            const gamepasses = response.data.Data.Items;
+            res.json(gamepasses);
+        } else {
+            res.status(404).json({ error: 'No game passes found for this user.' });
+        }
     } catch (error) {
         console.error('Error fetching game passes:', error.message);
         if (error.response) {
