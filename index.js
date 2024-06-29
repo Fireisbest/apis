@@ -5,16 +5,18 @@ const fs = require('fs');
 const app = express();
 app.use(express.json());
 
-let Donations = 1;
-const Donations = 'Donations.json';
+let donations = 1; // Initialize the counter with a default value of 1
+const donationsFile = 'Donations.json';
 
-if (fs.existsSync(counterFile)) {
-    const data = fs.readFileSync(counterFile);
-    counter = JSON.parse(data).counter;
+// Load counter from file if it exists
+if (fs.existsSync(donationsFile)) {
+    const data = fs.readFileSync(donationsFile);
+    donations = JSON.parse(data).donations;
 }
 
+// Function to save the counter to a file
 const saveDonation = () => {
-    fs.writeFileSync(counterFile, JSON.stringify({ counter }));
+    fs.writeFileSync(donationsFile, JSON.stringify({ donations }));
 };
 
 app.get('/api/gamepasses/:userId', async (req, res) => {
@@ -51,9 +53,9 @@ app.get('/api/gamepasses/:userId', async (req, res) => {
 });
 
 app.post('/api/donations', (req, res) => {
-    Donations += 1; 
+    donations += 1; 
     saveDonation(); 
-    res.json({ counter });
+    res.json({ donations });
 });
 
 module.exports = app;
