@@ -58,18 +58,16 @@ app.get('/api/gamepasses/:userId/', async (req, res) => {
             }
 
             const gamePassesResponses = await Promise.all(gamePassesPromises);
-            const gamepasses = { GamePasses: [] };
+            let allGamePasses = [];
 
-            gamePassesResponses.forEach((gamePassesResponse, index) => {
+            gamePassesResponses.forEach((gamePassesResponse) => {
                 if (gamePassesResponse.data && gamePassesResponse.data.data) {
                     const gamePasses = gamePassesResponse.data.data;
-                    gamepasses.GamePasses.push({
-                        gamePasses
-                    });
+                    allGamePasses = allGamePasses.concat(gamePasses);
                 }
             });
 
-            res.json(gamepasses);
+            res.json({ gamePasses: allGamePasses });
         } else {
             res.status(404).json({ error: 'No games found for this user.' });
         }
@@ -78,7 +76,6 @@ app.get('/api/gamepasses/:userId/', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while fetching game passes' });
     }
 });
-
 
 app.post('/api/donations', (req, res) => {
     donations += 1;
