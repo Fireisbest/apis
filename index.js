@@ -25,32 +25,20 @@ const saveGift = () => {
 
 app.get('/api/gamepasses/:userId/', async (req, res) => {
     const userId = req.params.userId;
-    const url = `https://www.roblox.com/users/inventory/list-json?assetTypeId=34&cursor=&itemsPerPage=100&pageNumber=1&userId=${userId}`;
+    const gamesUrl = `https://games.roblox.com/v2/users/${userId}/games?accessFilter=2&limit=10&sortOrder=Asc`;
 
     try {
-        const response = await axios.get(url, {
+        const response = await axios.get(gamesUrl, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 'Accept': 'application/json'
             }
         });
 
-        if (response.data && response.data.Data && response.data.Data.Items) {
-            const gamepasses = response.data.Data;
-            const gamesUrl = `https://games.roproxy.com/v2/users/${userId}/games?accessFilter=2&limit=10&sortOrder=Asc`;
-
-            const gamesResponse = await axios.get(gamesUrl, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Accept': 'application/json'
-                }
-            });
-
-            if (gamesResponse.data && gamesResponse.data.data) {
-                const games = gamesResponse.data.data;
-
+        if (response.data && response.data.Data) {
+            const games = response.data.Data;
                 for (const game of games) {
-                    const gamePassesUrl = `https://games.roproxy.com/v1/games/${game.id}/game-passes?limit=10&sortOrder=Asc`;
+                    const gamePassesUrl = `https://games.roblox.com/v1/games/${game.id}/game-passes?limit=10&sortOrder=Asc`;
                     const gamePassesResponse = await axios.get(gamePassesUrl, {
                         headers: {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -67,11 +55,8 @@ app.get('/api/gamepasses/:userId/', async (req, res) => {
 
                 gamepasses.Games = games;
                 res.json(gamepasses);
-            } else {
-                res.status(404).json({ error: 'No games found for this user.' });
-            }
         } else {
-            res.status(404).json({ error: 'No game passes found for this user.' });
+            res.status(404).json({ error: 'No game found for this user.' });
         }
     } catch (error) {
         console.error('Error fetching game passes:', error.message);
