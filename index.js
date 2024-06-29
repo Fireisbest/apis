@@ -1,11 +1,25 @@
 const express = require('express');
 const axios = require('axios');
+const fs = require('fs');
 
 const app = express();
+app.use(express.json());
+
+let Donations = 1;
+const Donations = 'Donations.json';
+
+if (fs.existsSync(counterFile)) {
+    const data = fs.readFileSync(counterFile);
+    counter = JSON.parse(data).counter;
+}
+
+const saveDonation = () => {
+    fs.writeFileSync(counterFile, JSON.stringify({ counter }));
+};
 
 app.get('/api/gamepasses/:userId', async (req, res) => {
     const userId = req.params.userId;
-    const url = `https://www.roblox.com/users/inventory/list-json?assetTypeId=34&cursor=&itemsPerPage=500&pageNumber=1&userId=${userId}`;
+    const url = `https://www.roblox.com/users/inventory/list-json?assetTypeId=34&cursor=&itemsPerPage=300&pageNumber=1&userId=${userId}`;
 
     try {
         const response = await axios.get(url, {
@@ -36,5 +50,11 @@ app.get('/api/gamepasses/:userId', async (req, res) => {
     }
 });
 
+app.post('/api/donations', (req, res) => {
+    Donations += 1; 
+    saveDonation(); 
+    res.json({ counter });
+});
+
 module.exports = app;
-module.exports = (req, res) => app(req, res); // Ensures compatibility with Vercel
+module.exports = (req, res) => app(req, res); 
