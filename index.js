@@ -106,7 +106,6 @@ app.get('/api/gamepasses/:userId/', async (req, res) => {
     }
 });
 
-
 app.post('/api/donations', (req, res) => {
     donations += 1;
     saveDonation();
