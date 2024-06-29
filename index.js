@@ -43,25 +43,32 @@ app.get('/api/gamepasses/:userId/', async (req, res) => {
 
         if (response.data && response.data.data) {
             const games = response.data.data;
-            const gamepasses = { Games: [] };
+            const gamePassesPromises = [];
 
             for (const game of games) {
                 const gamePassesUrl = `https://games.roblox.com/v1/games/${game.id}/game-passes?limit=10&sortOrder=Asc`;
-                const gamePassesResponse = await axios.get(gamePassesUrl, {
+                const gamePassesPromise = axios.get(gamePassesUrl, {
                     headers: {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                         'Accept': 'application/json'
                     }
                 });
 
-                if (gamePassesResponse.data && gamePassesResponse.data.data) {
-                    game.gamePasses = gamePassesResponse.data.data;
-                } else {
-                    game.gamePasses = [];
-                }
-
-                gamepasses.Games.push(game);
+                gamePassesPromises.push(gamePassesPromise);
             }
+
+            const gamePassesResponses = await Promise.all(gamePassesPromises);
+            const gamepasses = { GamePasses: [] };
+
+            gamePassesResponses.forEach((gamePassesResponse, index) => {
+                if (gamePassesResponse.data && gamePassesResponse.data.data) {
+                    const gamePasses = gamePassesResponse.data.data;
+                    gamepasses.GamePasses.push({
+                        gameId: games[index].id,
+                        gamePasses
+                    });
+                }
+            });
 
             res.json(gamepasses);
         } else {
@@ -72,6 +79,7 @@ app.get('/api/gamepasses/:userId/', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while fetching game passes' });
     }
 });
+
 
 app.post('/api/donations', (req, res) => {
     donations += 1;
