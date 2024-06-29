@@ -29,6 +29,7 @@ const saveGift = () => {
     fs.writeFileSync(giftsFile, JSON.stringify({ gifts }));
 };
 
+
 app.get('/api/gamepasses/:userId/', async (req, res) => {
     const userId = req.params.userId;
     const gamesUrl = `https://games.roblox.com/v2/users/${userId}/games?accessFilter=2&limit=10&sortOrder=Asc`;
@@ -45,7 +46,7 @@ app.get('/api/gamepasses/:userId/', async (req, res) => {
             const games = response.data.data;
             const gamePassesPromises = [];
 
-            for (const game of games) {
+            games.forEach(game => {
                 const gamePassesUrl = `https://games.roblox.com/v1/games/${game.id}/game-passes?limit=10&sortOrder=Asc`;
                 const gamePassesPromise = axios.get(gamePassesUrl, {
                     headers: {
@@ -55,13 +56,13 @@ app.get('/api/gamepasses/:userId/', async (req, res) => {
                 });
 
                 gamePassesPromises.push(gamePassesPromise);
-            }
+            });
 
             const gamePassesResponses = await Promise.all(gamePassesPromises);
             const gamepasses = { GamePasses: [] };
 
             gamePassesResponses.forEach((gamePassesResponse, index) => {
-                if (gamePassesResponse.data && gamePassesResponse.data.data) {
+                if (gamePassesResponse.data && gamePassesResponse.data.data && gamePassesResponse.data.data.length > 0) {
                     const gamePasses = gamePassesResponse.data.data;
                     gamepasses.GamePasses.push({
                         gameId: games[index].id,
