@@ -23,9 +23,10 @@ const saveDonation = () => {
 const saveGift = () => {
     fs.writeFileSync(giftsFile, JSON.stringify({ gifts }));
 };
-app.get('/api/gamepasses/:userId', async (req, res) => {
+app.get('/api/gamepasses/:userId/:cursor', async (req, res) => {
     const userId = req.params.userId;
-    const url = `https://www.roblox.com/users/inventory/list-json?assetTypeId=34&cursor=&itemsPerPage=300&pageNumber=1&userId=${userId}`;
+    const cursor  = req.params.cursor;
+    const url = `https://www.roblox.com/users/inventory/list-json?assetTypeId=34&cursor=&itemsPerPage=100&pageNumber=1&userId=${userId}`;
 
     try {
         const response = await axios.get(url, {
@@ -36,7 +37,7 @@ app.get('/api/gamepasses/:userId', async (req, res) => {
         });
 
         if (response.data && response.data.Data && response.data.Data.Items) {
-            const gamepasses = response.data.Data.Items;
+            const gamepasses = response.data.Data;
             res.json(gamepasses);
         } else {
             res.status(404).json({ error: 'No game passes found for this user.' });
