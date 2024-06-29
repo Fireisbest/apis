@@ -64,7 +64,6 @@ app.get('/api/gamepasses/:userId/', async (req, res) => {
                 if (gamePassesResponse.data && gamePassesResponse.data.data) {
                     const gamePasses = gamePassesResponse.data.data;
                     gamepasses.GamePasses.push({
-                        gameId: games[index].id,
                         gamePasses
                     });
                 }
