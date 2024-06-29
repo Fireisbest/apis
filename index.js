@@ -5,7 +5,7 @@ const app = express();
 
 app.get('/api/gamepasses/:userId', async (req, res) => {
     const userId = req.params.userId;
-    const url = `https://www.roblox.com/users/inventory/list-json?assetTypeId=34&cursor=&itemsPerPage=100&pageNumber=1&userId=${userId}`;
+    const url = `https://www.roblox.com/users/inventory/list-json?assetTypeId=34&cursor=&itemsPerPage=500&pageNumber=1&userId=${userId}`;
 
     try {
         const response = await axios.get(url, {
