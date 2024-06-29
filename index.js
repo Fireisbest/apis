@@ -5,10 +5,12 @@ const fs = require('fs');
 const app = express();
 app.use(express.json());
 
-let donations = 1; // Initialize the counter with a default value of 1
+let donations = 1; 
 const donationsFile = 'Donations.json';
+let gifts = 1; 
+const giftsFile = 'Gifts.json';
 
-// Load counter from file if it exists
+
 if (fs.existsSync(donationsFile)) {
     const data = fs.readFileSync(donationsFile);
     donations = JSON.parse(data).donations;
@@ -18,7 +20,9 @@ if (fs.existsSync(donationsFile)) {
 const saveDonation = () => {
     fs.writeFileSync(donationsFile, JSON.stringify({ donations }));
 };
-
+const saveGift = () => {
+    fs.writeFileSync(giftsFile, JSON.stringify({ gifts }));
+};
 app.get('/api/gamepasses/:userId', async (req, res) => {
     const userId = req.params.userId;
     const url = `https://www.roblox.com/users/inventory/list-json?assetTypeId=34&cursor=&itemsPerPage=300&pageNumber=1&userId=${userId}`;
@@ -57,6 +61,13 @@ app.post('/api/donations', (req, res) => {
     saveDonation(); 
     res.json({ donations });
 });
+
+app.post('/api/gifts', (req, res) => {
+    donations += 1; 
+    saveGift(); 
+    res.json({ gifts });
+});
+
 
 module.exports = app;
 module.exports = (req, res) => app(req, res); 
