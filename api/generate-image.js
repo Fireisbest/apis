@@ -1,6 +1,4 @@
 const { createCanvas, loadImage } = require('canvas');
-const sharp = require('sharp');
-const path = require('path');
 
 module.exports = async (req, res) => {
     const { donator, raiser, amount } = req.query;
@@ -15,30 +13,43 @@ module.exports = async (req, res) => {
     const canvas = createCanvas(width, height);
     const context = canvas.getContext('2d');
 
-    // Load the base image
-    const baseImagePath = path.join(__dirname, 'base_image.png');
-    const baseImage = await loadImage(baseImagePath);
-    context.drawImage(baseImage, 0, 0, width, height);
+    // Set background color
+    context.fillStyle = '#000000';
+    context.fillRect(0, 0, width, height);
 
-    // Set up fonts and colors
-    context.font = '48px Arial';
-    context.fillStyle = '#FFFFFF';
+    // Draw the circle for donator
+    context.beginPath();
+    context.arc(300, 200, 100, 0, Math.PI * 2, true);
+    context.lineWidth = 10;
+    context.strokeStyle = '#FF00FF';
+    context.stroke();
+
+    // Draw the circle for raiser
+    context.beginPath();
+    context.arc(900, 200, 100, 0, Math.PI * 2, true);
+    context.lineWidth = 10;
+    context.strokeStyle = '#FF00FF';
+    context.stroke();
 
     // Draw the amount
     context.fillStyle = '#FF00FF';
-    context.fillText(amount, 500, 200);
+    context.font = 'bold 72px Arial';
+    context.fillText(amount, 480, 220);
+
+    // Draw "donated to" text
+    context.fillStyle = '#FFFFFF';
+    context.font = 'bold 48px Arial';
+    context.fillText('donated to', 550, 300);
 
     // Draw the usernames
     context.fillStyle = '#FFFFFF';
-    context.fillText(`@${donator}`, 50, 350);
-    context.fillText(`@${raiser}`, 950, 350);
+    context.font = 'bold 32px Arial';
+    context.fillText(`@${donator}`, 200, 350);
+    context.fillText(`@${raiser}`, 800, 350);
 
     // Convert canvas to buffer
     const buffer = canvas.toBuffer('image/png');
 
-    // Use sharp to handle image resizing if needed
-    const image = await sharp(buffer).toFormat('png').toBuffer();
-
     res.setHeader('Content-Type', 'image/png');
-    res.send(image);
+    res.send(buffer);
 };
