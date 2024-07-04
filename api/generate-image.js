@@ -1,4 +1,4 @@
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas } = require('canvas');
 
 module.exports = async (req, res) => {
     const { donator, raiser, amount } = req.query;
