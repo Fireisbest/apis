@@ -1,10 +1,11 @@
 {
-  "name": "fires-apis",
+  "name": "fires apis",
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
     "express": "^4.17.1",
-    "axios": "^0.21.1"
+    "axios": "^0.21.1",
+    "canvas": "^2.7.0" 
   },
   "scripts": {
     "start": "node index.js"
