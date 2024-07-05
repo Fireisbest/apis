@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const fs = require('fs');
+const { createCanvas, loadImage } = require('canvas');
 
 const app = express();
 app.use(express.json());
@@ -87,6 +88,37 @@ app.post('/api/gifts', (req, res) => {
     gifts += 1;
     saveGift();
     res.json({ gifts });
+});
+
+app.get('/api/dononotif', async (req, res) => {
+    const { username1, username2, amount } = req.query;
+
+    if (!username1 || !username2 || !amount) {
+        return res.status(400).json({ error: 'Missing parameters' });
+    }
+
+    const canvas = createCanvas(1440, 512);
+    const ctx = canvas.getContext('2d');
+
+    // Load base image
+    const baseImage = await loadImage('/mnt/data/image.png');
+    ctx.drawImage(baseImage, 0, 0, 1440, 512);
+
+    // Add custom text
+    ctx.font = 'bold 60px Sans-serif';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'center';
+
+    ctx.fillText(`@${username1}`, 270, 420); // Left username
+    ctx.fillText(`@${username2}`, 1170, 420); // Right username
+
+    ctx.font = 'bold 100px Sans-serif';
+    ctx.fillStyle = '#FF00FF';
+    ctx.fillText(amount, 720, 280); // Amount
+
+    // Send image as response
+    res.setHeader('Content-Type', 'image/png');
+    canvas.createPNGStream().pipe(res);
 });
 
 module.exports = app;
