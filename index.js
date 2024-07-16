@@ -69,7 +69,7 @@ const getProductInfo = async (assetId, assetType) => {
     }
 };
 
-app.get('/api/assets/:userId', async (req, res) => {
+app.get('/api/gamepasses/:userId', async (req, res) => {
     const userId = req.params.userId;
     const clothingTypes = ['Shirt', 'Pants', 'TShirt'];
     const assets = [];
@@ -111,7 +111,7 @@ app.get('/api/assets/:userId', async (req, res) => {
         res.json({ assets });
     } catch (error) {
         console.error('Error fetching assets:', error.message);
-        res.status(500).json({ error: 'An error occurred while fetching the gamepasses, shirts, t-shirts and pants' });
+        res.status(500).json({ error: 'An error occurred while fetching the assets' });
     }
 });
 
@@ -125,6 +125,11 @@ app.post('/api/gifts', (req, res) => {
     gifts += 1;
     saveGift();
     res.json({ gifts });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = app;
