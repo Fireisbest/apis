@@ -20,26 +20,6 @@ if (fs.existsSync(giftsFile)) {
     gifts = JSON.parse(data).gifts;
 }
 
-const getAllPages = async (baseUrl) => {
-    let allData = [];
-    let cursor = '';
-
-    do {
-        const url = cursor ? `${baseUrl}&cursor=${cursor}` : baseUrl;
-        const response = await axios.get(url);
-        const pageData = response.data;
-
-        if (pageData && pageData.data) {
-            allData = allData.concat(pageData.data);
-            cursor = pageData.nextPageCursor || '';
-        } else {
-            cursor = '';
-        }
-    } while (cursor);
-
-    return allData;
-};
-
 // Function to save the counter to a file
 const saveDonation = () => {
     fs.writeFileSync(donationsFile, JSON.stringify({ donations }));
