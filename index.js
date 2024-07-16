@@ -36,13 +36,18 @@ const getAllPages = async (baseUrl) => {
 
     do {
         const url = cursor ? `${baseUrl}&cursor=${cursor}` : baseUrl;
-        const response = await axios.get(url);
-        const pageData = response.data;
+        try {
+            const response = await axios.get(url);
+            const pageData = response.data;
 
-        if (pageData && pageData.data) {
-            allData = allData.concat(pageData.data);
-            cursor = pageData.nextPageCursor || '';
-        } else {
+            if (pageData && pageData.data) {
+                allData = allData.concat(pageData.data);
+                cursor = pageData.nextPageCursor || '';
+            } else {
+                cursor = '';
+            }
+        } catch (error) {
+            console.error(`Error fetching data from ${url}: ${error.message}`);
             cursor = '';
         }
     } while (cursor);
@@ -64,12 +69,12 @@ const getProductInfo = async (assetId, assetType) => {
             icon: `rbxassetid://${productInfo.IconImageAssetId}`
         };
     } catch (error) {
-        console.warn(`Failed to get product info for ${assetType}: ${assetId}`);
+        console.error(`Failed to get product info for ${assetType}: ${assetId}: ${error.message}`);
         return null;
     }
 };
 
-app.get('/api/gamepasses/:userId', async (req, res) => {
+app.get('/api/assets/:userId', async (req, res) => {
     const userId = req.params.userId;
     const clothingTypes = ['Shirt', 'Pants', 'TShirt'];
     const assets = [];
