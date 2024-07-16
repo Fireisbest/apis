@@ -31,7 +31,7 @@ const saveGift = () => {
 
 app.get('/api/gamepasses/:userId/', async (req, res) => {
     const userId = req.params.userId;
-    const gamesUrl = `https://games.roblox.com/v2/users/${userId}/games?accessFilter=2&limit=100&sortOrder=Asc`;
+    const gamesUrl = `https://games.roblox.com/v2/users/${userId}/games?accessFilter=2&limit=50&sortOrder=Asc`;
 
     try {
         const response = await axios.get(gamesUrl, {
