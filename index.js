@@ -20,6 +20,16 @@ if (fs.existsSync(giftsFile)) {
     gifts = JSON.parse(data).gifts;
 }
 
+// Function to save the counter to a file
+const saveDonation = () => {
+    fs.writeFileSync(donationsFile, JSON.stringify({ donations }));
+};
+
+const saveGift = () => {
+    fs.writeFileSync(giftsFile, JSON.stringify({ gifts }));
+};
+
+// Function to get all pages of data from a paginated API
 const getAllPages = async (baseUrl) => {
     let allData = [];
     let cursor = '';
@@ -40,60 +50,68 @@ const getAllPages = async (baseUrl) => {
     return allData;
 };
 
-// Function to save the counter to a file
-const saveDonation = () => {
-    fs.writeFileSync(donationsFile, JSON.stringify({ donations }));
+// Function to get product info (game pass, clothing, asset) from Roblox API
+const getProductInfo = async (assetId, assetType) => {
+    const url = `https://api.roblox.com/marketplace/productinfo?assetId=${assetId}`;
+    try {
+        const response = await axios.get(url);
+        const productInfo = response.data;
+        return {
+            id: assetId,
+            type: assetType,
+            name: productInfo.Name,
+            price: productInfo.PriceInRobux || 0,
+            icon: `rbxassetid://${productInfo.IconImageAssetId}`
+        };
+    } catch (error) {
+        console.warn(`Failed to get product info for ${assetType}: ${assetId}`);
+        return null;
+    }
 };
 
-const saveGift = () => {
-    fs.writeFileSync(giftsFile, JSON.stringify({ gifts }));
-};
-
-app.get('/api/gamepasses/:userId/', async (req, res) => {
+app.get('/api/assets/:userId', async (req, res) => {
     const userId = req.params.userId;
-    const gamesUrl = `https://games.roblox.com/v2/users/${userId}/games?accessFilter=2&limit=100&sortOrder=Asc`;
+    const clothingTypes = ['Shirt', 'Pants', 'TShirt'];
+    const assets = [];
 
     try {
-        const response = await axios.get(gamesUrl, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'application/json'
-            }
-        });
+        // Get clothing items created by the user
+        for (const type of clothingTypes) {
+            const clothingUrl = `https://inventory.roblox.com/v1/users/${userId}/assets/collectibles?assetType=${type}&limit=100&sortOrder=Asc`;
+            const clothingItems = await getAllPages(clothingUrl);
 
-        if (response.data && response.data.data) {
-            const games = response.data.data;
-            const gamePassesPromises = [];
-
-            for (const game of games) {
-                const gamePassesUrl = await getAllPages(`https://games.roblox.com/v1/games/${game.id}/game-passes?limit=100&sortOrder=Asc`);
-                const gamePassesPromise = axios.get(gamePassesUrl, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                        'Accept': 'application/json'
+            for (const item of clothingItems) {
+                if (item.creatorTargetId == userId) {
+                    const productInfo = await getProductInfo(item.assetId, type);
+                    if (productInfo) {
+                        assets.push(productInfo);
                     }
-                });
-
-                gamePassesPromises.push(gamePassesPromise);
-            }
-
-            const gamePassesResponses = await Promise.all(gamePassesPromises);
-            let allGamePasses = [];
-
-            gamePassesResponses.forEach((gamePassesResponse) => {
-                if (gamePassesResponse.data && gamePassesResponse.data.data) {
-                    const gamePasses = gamePassesResponse.data.data;
-                    allGamePasses = allGamePasses.concat(gamePasses);
                 }
-            });
-
-            res.json({ gamePasses: allGamePasses });
-        } else {
-            res.status(404).json({ error: 'No games found for this user.' });
+            }
         }
+
+        // Get game passes created by the user
+        const gamesUrl = `https://games.roblox.com/v2/users/${userId}/games?accessFilter=2&limit=50&sortOrder=Asc`;
+        const games = await getAllPages(gamesUrl);
+
+        for (const game of games) {
+            const gamePassesUrl = `https://games.roblox.com/v1/games/${game.id}/game-passes?limit=100&sortOrder=Asc`;
+            const gamePasses = await getAllPages(gamePassesUrl);
+
+            for (const gamePass of gamePasses) {
+                if (gamePass.creatorTargetId == userId) {
+                    const productInfo = await getProductInfo(gamePass.id, 'GamePass');
+                    if (productInfo) {
+                        assets.push(productInfo);
+                    }
+                }
+            }
+        }
+
+        res.json({ assets });
     } catch (error) {
-        console.error('Error fetching game passes:', error.message);
-        res.status(500).json({ error: 'An error occurred while fetching game passes' });
+        console.error('Error fetching assets:', error.message);
+        res.status(500).json({ error: 'An error occurred while fetching the gamepasses, shirts, t-shirts and pants' });
     }
 });
 
