@@ -20,6 +20,26 @@ if (fs.existsSync(giftsFile)) {
     gifts = JSON.parse(data).gifts;
 }
 
+const getAllPages = async (baseUrl) => {
+    let allData = [];
+    let cursor = '';
+
+    do {
+        const url = cursor ? `${baseUrl}&cursor=${cursor}` : baseUrl;
+        const response = await axios.get(url);
+        const pageData = response.data;
+
+        if (pageData && pageData.data) {
+            allData = allData.concat(pageData.data);
+            cursor = pageData.nextPageCursor || '';
+        } else {
+            cursor = '';
+        }
+    } while (cursor);
+
+    return allData;
+};
+
 // Function to save the counter to a file
 const saveDonation = () => {
     fs.writeFileSync(donationsFile, JSON.stringify({ donations }));
@@ -31,7 +51,7 @@ const saveGift = () => {
 
 app.get('/api/gamepasses/:userId/', async (req, res) => {
     const userId = req.params.userId;
-    const gamesUrl = `https://games.roblox.com/v2/users/${userId}/games?accessFilter=2&limit=10&sortOrder=Asc`;
+    const gamesUrl = `https://games.roblox.com/v2/users/${userId}/games?accessFilter=2&limit=50&sortOrder=Asc`;
 
     try {
         const response = await axios.get(gamesUrl, {
@@ -46,7 +66,7 @@ app.get('/api/gamepasses/:userId/', async (req, res) => {
             const gamePassesPromises = [];
 
             for (const game of games) {
-                const gamePassesUrl = `https://games.roblox.com/v1/games/${game.id}/game-passes?limit=10&sortOrder=Asc`;
+                const gamePassesUrl = `https://games.roblox.com/v1/games/${game.id}/game-passes?limit=100&sortOrder=Asc`;
                 const gamePassesPromise = axios.get(gamePassesUrl, {
                     headers: {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
